@@ -45,6 +45,8 @@ extern "C"
 #define LWM2M_CARRIER_EVENT_LTE_READY     11
 /** An error occurred. */
 #define LWM2M_CARRIER_EVENT_ERROR         20
+/**< CA certificates need to be initialized. */
+#define LWM2M_CARRIER_EVENT_CERTS_INIT    30
 
 /**
  * @brief LWM2M carrier library event structure.
@@ -169,6 +171,17 @@ typedef struct {
 #define LWM2M_CARRIER_IDENTITY_MANUFACTURER 1
 #define LWM2M_CARRIER_IDENTITY_MODEL        2
 #define LWM2M_CARRIER_IDENTITY_SW_VERSION   3
+
+/**
+ * @brief Structure holding security tags for CA certificates to be applied by
+ *        the LwM2M carrier library.
+ */
+typedef struct {
+	/** Pointer to static array of available security tags */
+	int *tags;
+	/** Number of available security tags */
+	int count;
+} ca_cert_tags_t;
 
 /**
  * @brief Structure holding LWM2M carrier library initialization parameters.

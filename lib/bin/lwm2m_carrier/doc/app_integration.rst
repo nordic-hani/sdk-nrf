@@ -73,6 +73,13 @@ LwM2M carrier library events
    This event indicates that the :ref:`nrf_modem` is initialized and can be used.
    (See :ref:`req_appln_limitations`).
 
+:c:macro:`LWM2M_CARRIER_EVENT_CERTS_INIT`
+   This event indicates that CA certificates must be provisioned to the modem by the application.
+   The LwM2M carrier library expects the application to assign the event data :c:type:`event->data` to a struct :c:type:`ca_cert_tags_t`.
+   This struct must contain the security tags where the CA certificates are stored in the modem.
+   See :ref:`lwm2m_carrier` for an example of how these certificates are written to modem using :ref:`modem_key_mgmt` library.
+   The LwM2M carrier library will apply the above certificates during certain out-of-band FOTA operations.
+
 :c:macro:`LWM2M_CARRIER_EVENT_CONNECTING`, :c:macro:`LWM2M_CARRIER_EVENT_CONNECTED`, :c:macro:`LWM2M_CARRIER_EVENT_DISCONNECTING`, :c:macro:`LWM2M_CARRIER_EVENT_DISCONNECTED`
    These events indicate that the device is connecting to or disconnecting from the LTE network.
    They occur during the bootstrapping process, startup, and during FOTA.
@@ -168,6 +175,7 @@ LwM2M carrier library events
    :c:macro:`LWM2M_CARRIER_ERROR_FOTA_FAIL`
       This error indicates a failure in applying a valid update.
       If this error persists, create a ticket in `DevZone`_ with the modem trace.
+
 
 Device objects
 **************

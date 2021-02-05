@@ -22,8 +22,9 @@ For certification status, see `Mobile network operator certifications`_.
 Changes
 =======
 
-*
-*
+* CA certificates are no longer provided by the LwM2M carrier library.
+   * Application is now expected to store CA certificates into modem security tags.
+   * New event :c:macro:`LWM2M_CARRIER_EVENT_CERTS_INIT` instructs the application to provide CA certificate security tags to the LwM2M carrier library.
 
 liblwm2m_carrier 0.10.2
 ***********************

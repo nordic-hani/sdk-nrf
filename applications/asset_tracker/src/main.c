@@ -28,6 +28,7 @@
 
 #if defined(CONFIG_LWM2M_CARRIER)
 #include <lwm2m_carrier.h>
+#include "carrier_certs.h"
 #endif
 
 #if defined(CONFIG_BOOTLOADER_MCUBOOT)
@@ -232,6 +233,8 @@ static void shutdown_modem(void)
 #if defined(CONFIG_LWM2M_CARRIER)
 int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 {
+	int err = 0;
+
 	switch (event->type) {
 	case LWM2M_CARRIER_EVENT_BSDLIB_INIT:
 		LOG_INF("LWM2M_CARRIER_EVENT_BSDLIB_INIT");
@@ -277,9 +280,12 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 			((lwm2m_carrier_event_error_t *)event->data)->code,
 			((lwm2m_carrier_event_error_t *)event->data)->value);
 		break;
+	case LWM2M_CARRIER_EVENT_CERTS_INIT:
+		err = carrier_cert_provision((ca_cert_tags_t *)event->data);
+		break;
 	}
 
-	return 0;
+	return err;
 }
 
 /**@brief Disconnects from cloud. First it tries using the cloud backend's
