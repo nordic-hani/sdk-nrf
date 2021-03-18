@@ -43,6 +43,12 @@ static struct nvs_fs fs = {
 	.offset = NVS_STORAGE_OFFSET,
 };
 
+K_THREAD_STACK_ARRAY_DEFINE(lwm2m_os_work_q_client_stack, LWM2M_OS_MAX_WORK_QS, 2048);
+struct k_work_q lwm2m_os_work_qs[LWM2M_OS_MAX_WORK_QS];
+
+static struct k_sem lwm2m_os_sems[LWM2M_OS_MAX_SEM_COUNT];
+static uint8_t lwm2m_os_sems_used;
+
 int lwm2m_os_init(void)
 {
 	/* Initialize storage */
@@ -91,6 +97,40 @@ uint32_t lwm2m_os_rand_get(void)
 	return k_cycle_get_32();
 }
 
+/* Semaphore functions */
+
+int lwm2m_os_sem_init(lwm2m_os_sem_t **sem, unsigned int initial_count, unsigned int limit)
+{
+	__ASSERT(lwm2m_os_sems_used < LWM2M_OS_MAX_SEM_COUNT, "Not enough semaphores in glue layer");
+
+	*sem = (lwm2m_os_sem_t *)&lwm2m_os_sems[lwm2m_os_sems_used];
+
+	lwm2m_os_sems_used++;
+
+	return k_sem_init((struct k_sem *)*sem, initial_count, limit);
+}
+
+int lwm2m_os_sem_take(lwm2m_os_sem_t *sem, int timeout)
+{
+	__ASSERT(PART_OF_ARRAY(lwm2m_os_sems, (struct k_sem *)sem), "Uninitialised semaphore");
+
+	return k_sem_take((struct k_sem *)sem, timeout == -1 ? K_FOREVER : K_MSEC(timeout));
+}
+
+void lwm2m_os_sem_give(lwm2m_os_sem_t *sem)
+{
+	__ASSERT(PART_OF_ARRAY(lwm2m_os_sems, (struct k_sem *)sem), "Uninitialised semaphore");
+
+	k_sem_give((struct k_sem *)sem);
+}
+
+void lwm2m_os_sem_reset(lwm2m_os_sem_t *sem)
+{
+	__ASSERT(PART_OF_ARRAY(lwm2m_os_sems, (struct k_sem *)sem), "Uninitialised semaphore");
+
+	k_sem_reset((struct k_sem *)sem);
+}
+
 /* Non volatile storage */
 
 int lwm2m_os_storage_delete(uint16_t id)
@@ -122,55 +162,41 @@ int lwm2m_os_storage_write(uint16_t id, const void *data, size_t len)
 struct lwm2m_work {
 	struct k_delayed_work work_item;
 	lwm2m_os_timer_handler_t handler;
-	int32_t remaining_timeout_ms;
 };
 
 static struct lwm2m_work lwm2m_works[LWM2M_OS_MAX_TIMER_COUNT];
 
-static int32_t get_timeout_value(int32_t timeout,
-				 struct lwm2m_work *lwm2m_work)
-{
-	/* Zephyr's timing subsystem uses positive integers so the
-	 * largest tick count that can be represented is 31 bit large.
-	 *
-	 * max_timeout_ms = (int max - 1 / ticks per sec) * 1000
-	 */
-	static const int32_t max_timeout_ms =
-		(INT32_MAX - 1) / CONFIG_SYS_CLOCK_TICKS_PER_SEC * MSEC_PER_SEC;
-
-	/* Avoid requesting timeouts larger than max_timeout_ms,
-	 * or they will expire immediately.
-	 * See: https://github.com/zephyrproject-rtos/zephyr/issues/19075
-	 */
-	if (timeout > max_timeout_ms) {
-		lwm2m_work->remaining_timeout_ms = timeout - max_timeout_ms;
-		timeout = max_timeout_ms;
-	} else {
-		lwm2m_work->remaining_timeout_ms = 0;
-	}
-
-	return timeout;
-}
-
 static void work_handler(struct k_work *work)
 {
+	struct k_delayed_work *delayed_work =
+		CONTAINER_OF(work, struct k_delayed_work, work);
 	struct lwm2m_work *lwm2m_work =
-		CONTAINER_OF(work, struct lwm2m_work, work_item);
+		CONTAINER_OF(delayed_work, struct lwm2m_work, work_item);
 
-	if (lwm2m_work->remaining_timeout_ms > 0) {
-		int32_t timeout = lwm2m_work->remaining_timeout_ms;
-
-		timeout = get_timeout_value(timeout, lwm2m_work);
-
-		/* FIXME: handle error return from k_delayed_work_submit(). */
-		(void)k_delayed_work_submit(&lwm2m_work->work_item,
-					    K_MSEC(timeout));
-	} else {
-		lwm2m_work->handler(lwm2m_work);
-	}
+	lwm2m_work->handler(lwm2m_work);
 }
 
-void *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler)
+/* Delayed work queue functions */
+
+lwm2m_os_work_q_t *lwm2m_os_work_q_start(int index, const char *name)
+{
+	__ASSERT(index < LWM2M_OS_MAX_WORK_QS, "Not enough work queues in glue layer");
+
+	if(index >= LWM2M_OS_MAX_WORK_QS){
+		return NULL;
+	}
+	lwm2m_os_work_q_t *work_q = (lwm2m_os_work_q_t *)&lwm2m_os_work_qs[index];
+
+	k_work_q_start(&lwm2m_os_work_qs[index], lwm2m_os_work_q_client_stack[index],
+		       K_THREAD_STACK_SIZEOF(lwm2m_os_work_q_client_stack[index]),
+		       K_LOWEST_APPLICATION_THREAD_PRIO);
+
+	k_thread_name_set(&lwm2m_os_work_qs[index].thread, name);
+
+	return work_q;
+}
+
+lwm2m_os_timer_t *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler)
 {
 	struct lwm2m_work *work = NULL;
 
@@ -187,6 +213,8 @@ void *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler)
 
 	irq_unlock(key);
 
+	__ASSERT(work != NULL, "Not enough timers in glue layer");
+
 	if (work != NULL) {
 		k_delayed_work_init(&work->work_item, work_handler);
 	}
@@ -194,9 +222,11 @@ void *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler)
 	return work;
 }
 
-void lwm2m_os_timer_release(void *timer)
+void lwm2m_os_timer_release(lwm2m_os_timer_t *timer)
 {
 	struct lwm2m_work *work = (struct lwm2m_work *)timer;
+
+	__ASSERT(PART_OF_ARRAY(lwm2m_works, work), "release unknown timer");
 
 	if (!PART_OF_ARRAY(lwm2m_works, work)) {
 		return;
@@ -205,22 +235,39 @@ void lwm2m_os_timer_release(void *timer)
 	work->handler = NULL;
 }
 
-int lwm2m_os_timer_start(void *timer, int32_t timeout)
+int lwm2m_os_timer_start(lwm2m_os_timer_t *timer, int64_t msec)
 {
 	struct lwm2m_work *work = (struct lwm2m_work *)timer;
+
+	__ASSERT(PART_OF_ARRAY(lwm2m_works, work), "start unknown timer");
 
 	if (!PART_OF_ARRAY(lwm2m_works, work)) {
 		return -EINVAL;
 	}
 
-	timeout = get_timeout_value(timeout, work);
-
-	return k_delayed_work_submit(&work->work_item, K_MSEC(timeout));
+	return k_delayed_work_submit(&work->work_item, K_MSEC(msec));
 }
 
-void lwm2m_os_timer_cancel(void *timer)
+int lwm2m_os_timer_start_on_q(lwm2m_os_work_q_t *work_q, lwm2m_os_timer_t *timer, int64_t msec )
+{
+	struct k_work_q *queue = (struct k_work_q *)work_q;
+	struct lwm2m_work *work = (struct lwm2m_work *)timer;
+
+	__ASSERT(PART_OF_ARRAY(lwm2m_os_work_qs, queue), "start timer on unknown queue");
+	__ASSERT(PART_OF_ARRAY(lwm2m_works, work), "start unknown timer on queue");
+
+	if (!PART_OF_ARRAY(lwm2m_works, work) || !PART_OF_ARRAY(lwm2m_os_work_qs, queue)) {
+		return -EINVAL;
+	}
+
+	return k_delayed_work_submit_to_queue(queue, &work->work_item, K_MSEC(msec));
+}
+
+void lwm2m_os_timer_cancel(lwm2m_os_timer_t *timer)
 {
 	struct lwm2m_work *work = (struct lwm2m_work *)timer;
+
+	__ASSERT(PART_OF_ARRAY(lwm2m_works, work), "cancel unknown timer");
 
 	if (!PART_OF_ARRAY(lwm2m_works, work)) {
 		return;
@@ -229,16 +276,19 @@ void lwm2m_os_timer_cancel(void *timer)
 	k_delayed_work_cancel(&work->work_item);
 }
 
-int32_t lwm2m_os_timer_remaining(void *timer)
+int64_t lwm2m_os_timer_remaining(lwm2m_os_timer_t *timer)
 {
 	struct lwm2m_work *work = (struct lwm2m_work *)timer;
+
+	__ASSERT(PART_OF_ARRAY(lwm2m_works, work), "get remaining on unknown timer");
 
 	if (!PART_OF_ARRAY(lwm2m_works, work)) {
 		return 0;
 	}
 
-	return k_delayed_work_remaining_get(&work->work_item) +
-	       work->remaining_timeout_ms;
+	/* k_delayed_work_remaining_get() returns int32_t even if CONFIG_TIMEOUT_64BIT is set.
+	 * We have to use the follwing line instead to get the 64bit value. */
+	return k_ticks_to_ms_floor64(z_timeout_remaining(&work->work_item.timeout));
 }
 
 /* LWM2M logs. */
@@ -292,7 +342,7 @@ void lwm2m_os_logdump(const char *str, const void *data, size_t len)
 	}
 }
 
-int lwm2m_os_bsdlib_init(void)
+int lwm2m_os_nrf_modem_init(void)
 {
 	int err;
 
@@ -327,7 +377,7 @@ int lwm2m_os_bsdlib_init(void)
 	return err;
 }
 
-int lwm2m_os_bsdlib_shutdown(void)
+int lwm2m_os_nrf_modem_shutdown(void)
 {
 	return nrf_modem_lib_shutdown();
 }
@@ -797,26 +847,7 @@ int lwm2m_os_sec_psk_write(uint32_t sec_tag, const void *buf, uint16_t len)
 
 int lwm2m_os_sec_psk_delete(uint32_t sec_tag)
 {
-	char xoperid[20];
-	char oper_id = 0;
-
-	int code = at_cmd_write("AT%XOPERID", xoperid, sizeof(xoperid),
-				(enum at_cmd_state *)NULL);
-
-	/* Expected result: "%XOPERID: <oper_id>" */
-	if ((code == 0) && (strncmp(xoperid, "%XOPERID: ", 10) == 0) &&
-	    (strlen(xoperid) >= 11)) {
-		oper_id = xoperid[10] - '0';
-	}
-
-	/* Delete only for specific operators. */
-	if ((oper_id == 2) || (oper_id == 3) || (oper_id == 4) ||
-	    (oper_id == 5)) {
-		return modem_key_mgmt_delete(sec_tag,
-					     MODEM_KEY_MGMT_CRED_TYPE_PSK);
-	}
-
-	return 0;
+	return modem_key_mgmt_delete(sec_tag, MODEM_KEY_MGMT_CRED_TYPE_PSK);
 }
 
 int lwm2m_os_sec_identity_exists(uint32_t sec_tag, bool *exists,
