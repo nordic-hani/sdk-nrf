@@ -18,9 +18,25 @@
  */
 
 /**
+ * @brief Maximum number of work queues that the system must support.
+ */
+#define LWM2M_OS_MAX_WORK_QS 2
+
+/**
  * @brief Maximum number of timers that the system must support.
  */
-#define LWM2M_OS_MAX_TIMER_COUNT 10
+#define LWM2M_OS_MAX_TIMER_COUNT (7 + (LWM2M_OS_MAX_WORK_QS * 5))
+
+typedef void lwm2m_os_work_q_t;
+typedef void lwm2m_os_timer_t;
+
+/**
+ * @brief Maximum number of semaphores that the system must support.
+ */
+#define LWM2M_OS_MAX_SEM_COUNT 7
+
+/* pointer to semaphore object */
+typedef void lwm2m_os_sem_t;
 
 #define LWM2M_LOG_LEVEL_NONE 0
 #define LWM2M_LOG_LEVEL_ERR 1
@@ -113,6 +129,44 @@ void *lwm2m_os_malloc(size_t size);
 void lwm2m_os_free(void *ptr);
 
 /**
+ * @brief Initialize a semaphore.
+ *
+ * @param sem Address of the pointer to the semaphore.
+ * @param initial_count Initial semaphore count.
+ * @param limit Maximum permitted semaphore count.
+ *
+ * @retval 0 Semaphore created successfully
+ * @retval -EINVAL Invalid values
+ */
+int lwm2m_os_sem_init(lwm2m_os_sem_t **sem, unsigned int initial_count, unsigned int limit);
+
+/**
+ * @brief Take a semaphore.
+ *
+ * @param sem Address of the semaphore.
+ * @param timeout timeout in ms or -1 for forever.
+ *
+ * @retval 0 Semaphore taken.
+ * @retval -EBUSY Returned without waiting.
+ * @retval -EAGAIN Waiting period timed out.
+ */
+int lwm2m_os_sem_take(lwm2m_os_sem_t *sem, int timeout);
+
+/**
+ * @brief Give a semaphore.
+ *
+ * @param sem Address of the semaphore.
+ */
+void lwm2m_os_sem_give(lwm2m_os_sem_t *sem);
+
+/**
+ * @brief Reset a semaphore.
+ *
+ * @param sem Address of the semaphore.
+ */
+void lwm2m_os_sem_reset(lwm2m_os_sem_t *sem);
+
+/**
  * @brief Get uptime, in milliseconds.
  */
 int64_t lwm2m_os_uptime_get(void);
@@ -153,29 +207,69 @@ int lwm2m_os_storage_read(uint16_t id, void *data, size_t len);
 int lwm2m_os_storage_write(uint16_t id, const void *data, size_t len);
 
 /**
- * @brief Request a timer from the OS.
+ * @brief Start a workqueue.
+ *
+ * @param index number of the queue.
+ * @param name name of the queue.
+ *
+ * @retval Workqueue.
  */
-void *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler);
+lwm2m_os_work_q_t *lwm2m_os_work_q_start(int index, const char *name);
 
 /**
- * @brief Release a timer.
+ * @brief Reserve a timer task from the OS.
+ *
+ * @param handler Function to run for this task.
+ *
+ * @retval Timer task.
  */
-void lwm2m_os_timer_release(void *timer);
+lwm2m_os_timer_t *lwm2m_os_timer_get(lwm2m_os_timer_handler_t handler);
 
 /**
- * @brief Start a timer.
+ * @brief Release a timer task.
  */
-int lwm2m_os_timer_start(void *timer, int32_t timeout);
+void lwm2m_os_timer_release(lwm2m_os_timer_t *timer);
+
+/**
+ * @brief Start a timer on system work queue.
+ *
+ * @param timer Timer task.
+ * @param msec Delay before submitting the task in ms.
+ *
+ * @retval 0 Work item countdown started.
+ * @retval -EINVAL Work item is being processed or has completed its work.
+ * @retval -EADDRINUSE Work item is pending on a different workqueue.
+ */
+int lwm2m_os_timer_start(lwm2m_os_timer_t *timer, int64_t timeout);
+
+/**
+ * @brief Start a timer on a specific queue.
+ *
+ * @param work_q Workqueue.
+ * @param timer Timer task.
+ * @param msec Delay before submitting the task in ms.
+ *
+ * @retval 0 Work item countdown started.
+ * @retval -EINVAL Work item is being processed or has completed its work.
+ * @retval -EADDRINUSE Work item is pending on a different workqueue.
+ */
+int lwm2m_os_timer_start_on_q(lwm2m_os_work_q_t *work_q, lwm2m_os_timer_t *timer, int64_t msec );
 
 /**
  * @brief Cancel a timer run.
+ *
+ * @param timer Timer task.
  */
-void lwm2m_os_timer_cancel(void *timer);
+void lwm2m_os_timer_cancel(lwm2m_os_timer_t *timer);
 
 /**
  * @brief Obtain the time remaining on a timer.
+ *
+ * @param timer Timer task.
+ *
+ * @retval Time remaining in ms.
  */
-int32_t lwm2m_os_timer_remaining(void *timer);
+int64_t lwm2m_os_timer_remaining(lwm2m_os_timer_t *timer);
 
 /**
  * @brief Create a string copy for a logger subsystem.
@@ -203,14 +297,14 @@ void lwm2m_os_logdump(const char *msg, const void *data, size_t len);
  * @return -1 on error
  * @return an error from @em nrf_modem_dfu in case of modem DFU.
  */
-int lwm2m_os_bsdlib_init(void);
+int lwm2m_os_nrf_modem_init(void);
 
 /**
  * @brief Shutdown the Modem library.
  *
  * @return 0 on success, -1 otherwise.
  */
-int lwm2m_os_bsdlib_shutdown(void);
+int lwm2m_os_nrf_modem_shutdown(void);
 
 /**
  * @brief Initialize AT command driver.
