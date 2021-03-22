@@ -56,3 +56,54 @@ The following message sequence chart shows FOTA updates:
     Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_LTE_READY"];
     Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_REGISTERED"];
     ...;
+
+
+The following message sequence chart shows successfull CA certificate initialization:
+
+.. msc::
+    hscale = "1.1";
+    Modem,Application,"LwM2M carrier Library";
+    |||;
+    ---                                        [label="LwM2M carrier library is initializing"];
+    |||;
+    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_CERTS_INIT"];
+    ...;
+    Application rbox Application               [label="Write CA certificates to modem security tags"];
+	Modem<<=Application                        [label="modem_key_mgmt_write(...)"];
+    ...;
+	Modem->Application                         [label="success"];
+	Application rbox Application               [label="Inform LwM2M carrier library of security tags for CA certificates"];
+    Application rbox Application               [label="lwm2m_carrier_event_t data set to ca_cert_tags_t"];
+	Modem->Application                         [label="success"];
+    ...;
+
+The following message sequence chart shows that the app fails CA certificate initialization:
+
+.. msc::
+    hscale = "1.1";
+    Modem,Application,"LwM2M carrier Library";
+    |||;
+    ---                                        [label="LwM2M carrier library is initializing"];
+    |||;
+    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_CERTS_INIT"];
+    ...;
+    Application rbox Application               [label="Write CA certificates to modem security tags"];
+	Modem<<=Application                        [label="modem_key_mgmt_write(...)"];
+    ...;
+	Modem->Application                         [label="error"];
+	Application->"LwM2M carrier Library"       [label="error"];
+    ...;
+
+The following message sequence chart shows that the app fails CA certificate initialization:
+
+.. msc::
+    hscale = "1.1";
+    Application,"LwM2M carrier Library";
+    |||;
+    ---                                        [label="LwM2M carrier library is initializing"];
+    |||;
+    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_FOTA_START"];
+    ...;
+    "LwM2M carrier Library" rbox "LwM2M carrier Library" [label="Write CA certificates to modem security tags"];
+    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_ERROR_FOTA_CONN (NRF_ECONNREFUSED)"];
+    ...;
