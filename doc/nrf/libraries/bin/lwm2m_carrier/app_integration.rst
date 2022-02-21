@@ -7,6 +7,11 @@ Application integration
    :local:
    :depth: 2
 
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_os_abstraction.svg
+    :alt: LwM2M library OS abstraction overview
+
+    LwM2M library OS abstraction overview
+
 The LwM2M carrier library has an OS abstraction layer.
 See :file:`lwm2m_os.h`.
 This abstraction layer makes the LwM2M carrier library independent of the |NCS| modules and underlying implementation of primitives such as timers, non-volatile storage, and heap allocation.
@@ -34,6 +39,8 @@ The OS abstraction layer is fully implemented for the |NCS|, and it would have t
 
 Configuration
 *************
+.. _lwm2m_configuration:
+
 
 To run the library in an application, you must implement the application with the API of the library.
 Enable the library by setting the :kconfig:option:`CONFIG_LWM2M_CARRIER` Kconfig option to ``y``.
