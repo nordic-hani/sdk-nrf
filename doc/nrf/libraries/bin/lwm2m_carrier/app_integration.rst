@@ -71,7 +71,13 @@ You can provide the initialization parameter :c:type:`lwm2m_carrier_config_t` to
   * This configuration specifies the lifetime of the custom LwM2M server.
   * This configuration is ignored if :kconfig:option:`CONFIG_LWM2M_CARRIER_CERTIFICATION_MODE` or :kconfig:option:`CONFIG_LWM2M_CARRIER_IS_SERVER_BOOTSTRAP` is set.
 
-* :kconfig:option:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_PSK`:
+* :kconfig:`CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT`:
+
+  * This configuration specifies the session idle timeout (inactivity). Upon timeout, the LwM2M carrier library will disconnect from the device managment server(s).
+  * The timeout closes the DTLS session. A new DTLS session will be created on the next activity (i.e lifetime trigger).
+  * Leaving this configuration empty (0) will set it to a default of (60 seconds).
+
+* :kconfig:`CONFIG_LWM2M_CARRIER_USE_CUSTOM_PSK`:
 
   * This configuration, together with :kconfig:option:`CONFIG_LWM2M_CARRIER_CUSTOM_PSK` can be set to use a non-default `Pre-Shared Key (PSK)`_.
   * If connecting to the normal carrier device management servers (normal operation), this configuration must not be set unless your carrier explicitly states to use a custom PSK, for example during self-testing.
@@ -218,6 +224,8 @@ Following are the various LwM2M carrier library events:
     * :c:macro:`LWM2M_CARRIER_ERROR_FOTA_FAIL` - This error indicates a failure in applying a valid update. If this error persists, create a ticket in `DevZone`_ with the modem trace.
 
     * :c:macro:`LWM2M_CARRIER_ERROR_CONFIGURATION` - This error indicates that an illegal object configuration was detected.
+
+    * :c:macro:`LWM2M_CARRIER_ERROR_INTERNAL` - This error indicates an unrecoverable error between the modem and carrier library. The LwM2M carrier library will only recover upon reboot.
 
 Device objects
 **************
