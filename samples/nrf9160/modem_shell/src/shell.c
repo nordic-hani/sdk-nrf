@@ -25,8 +25,13 @@
 #include <iperf_api.h>
 #endif
 #if defined(CONFIG_MOSH_LINK)
+#if defined(CONFIG_LWM2M_CARRIER)
+#include "link.h"
+#include <modem/pdn.h>
+#include "link_settings.h"
+#endif /* CONFIG_LWM2M_CARRIER */
 #include "link_shell.h"
-#endif
+#endif /* CONFIG_MOSH_LINK */
 #if defined(CONFIG_MOSH_CURL)
 #include <nrf_curl.h>
 #endif
@@ -45,7 +50,7 @@
 #include "uart/uart_shell.h"
 #include "mosh_print.h"
 
-extern struct k_sem nrf_modem_lib_initialized;
+extern struct k_sem nrf_carrier_lib_initialized;
 extern struct k_poll_signal mosh_signal;
 /**
  * @brief Overriding modem library error handler.
@@ -65,9 +70,9 @@ void lwm2m_print_err(const lwm2m_carrier_event_t *evt)
 			"No error",
 		[LWM2M_CARRIER_ERROR_BOOTSTRAP] =
 			"Bootstrap error",
-		[LWM2M_CARRIER_ERROR_CONNECT_FAIL] =
+		[LWM2M_CARRIER_ERROR_LTE_LINK_UP_FAIL] =
 			"Failed to connect to the LTE network",
-		[LWM2M_CARRIER_ERROR_DISCONNECT_FAIL] =
+		[LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL] =
 			"Failed to disconnect from the LTE network",
 		[LWM2M_CARRIER_ERROR_FOTA_PKG] =
 			"Package refused from modem",
@@ -79,6 +84,12 @@ void lwm2m_print_err(const lwm2m_carrier_event_t *evt)
 			"Connection to remote server lost",
 		[LWM2M_CARRIER_ERROR_FOTA_FAIL] =
 			"Modem firmware update failed",
+		[LWM2M_CARRIER_ERROR_CONFIGURATION] =
+			"Illegal object configuration detected",
+		[LWM2M_CARRIER_ERROR_INIT] =
+			"Initialization failure",
+		[LWM2M_CARRIER_ERROR_INTERNAL] =
+			"Internal failure",
 	};
 
 	mosh_error("%s, reason %d\n", strerr[err->code], err->value);
@@ -116,22 +127,37 @@ void lwm2m_print_deferred(const lwm2m_carrier_event_t *evt)
 
 int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 {
+	int err = 0;
+
 	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_MODEM_INIT:
-		mosh_print("LwM2M carrier event: modem lib initialized");
+	case LWM2M_CARRIER_EVENT_CARRIER_INIT:
+		mosh_print("LwM2M carrier event: carrier lib initialized");
+		k_sem_give(&nrf_carrier_lib_initialized);
 		break;
-	case LWM2M_CARRIER_EVENT_CONNECTING:
-		mosh_print("LwM2M carrier event: connecting");
-		k_sem_give(&nrf_modem_lib_initialized);
+	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
+		mosh_print("LwM2M carrier event: request LTE Link up");
+#if defined(CONFIG_LTE_LINK_CONTROL) && defined(CONFIG_MOSH_LINK)
+		link_func_mode_set(LTE_LC_FUNC_MODE_NORMAL,
+				   link_sett_is_normal_mode_autoconn_rel14_used());
+#else
+		err = lte_lc_connect_async(NULL);
+#endif
 		break;
-	case LWM2M_CARRIER_EVENT_CONNECTED:
-		mosh_print("LwM2M carrier event: connected");
+	case LWM2M_CARRIER_EVENT_LTE_LINK_DOWN:
+		mosh_print("LwM2M carrier event: request LTE Link down");
+#if defined(CONFIG_LTE_LINK_CONTROL) && defined(CONFIG_MOSH_LINK)
+		link_func_mode_set(LTE_LC_FUNC_MODE_OFFLINE, false);
+#else
+		err = lte_lc_offline(NULL);
+#endif
 		break;
-	case LWM2M_CARRIER_EVENT_DISCONNECTING:
-		mosh_print("LwM2M carrier event: disconnecting");
-		break;
-	case LWM2M_CARRIER_EVENT_DISCONNECTED:
-		mosh_print("LwM2M carrier event: disconnected");
+	case LWM2M_CARRIER_EVENT_LTE_POWER_OFF:
+		mosh_print("LwM2M carrier event: request LTE Power off");
+#if defined(CONFIG_LTE_LINK_CONTROL) && defined(CONFIG_MOSH_LINK)
+		link_func_mode_set(LTE_LC_FUNC_MODE_POWER_OFF, false);
+#else
+		err = lte_lc_power_off(NULL);
+#endif
 		break;
 	case LWM2M_CARRIER_EVENT_BOOTSTRAPPED:
 		mosh_print("LwM2M carrier event: bootstrapped");
@@ -158,7 +184,7 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 		break;
 	}
 
-	return 0;
+	return err;
 }
 #endif
 
