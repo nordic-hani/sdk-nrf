@@ -141,12 +141,6 @@ Following are the various LwM2M carrier library events:
   * This event indicates that the bootstrap sequence is complete, and that the device is ready to be registered.
   * This event is typically seen during the first boot-up.
 
-* :c:macro:`LWM2M_CARRIER_EVENT_LTE_READY`:
-
-  * This event indicates that the application can proceed or begin its normal operation.
-  * The bootstrap sequence is complete, and the application can use the LTE link without being interrupted by :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN` and :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP` events.
-  * In cases where the bootstrap was deferred, the :c:macro:`LWM2M_CARRIER_EVENT_LTE_READY` event will will still trigger so that the application can proceed with normal operation. In this case, link up/down events can happen at a later time.
-
 * :c:macro:`LWM2M_CARRIER_EVENT_REGISTERED`:
 
   * This event indicates that the device has registered successfully to the carrier's device management servers.
@@ -205,9 +199,9 @@ Following are the various LwM2M carrier library events:
       | server has been reached (``-ETIMEDOUT``).              | or the server is unavailable (for example temporary network issues).                 |                                                  |
       |                                                        | If this error persists, contact your carrier.                                        |                                                  |
       +--------------------------------------------------------+--------------------------------------------------------------------------------------+--------------------------------------------------+
-      | Failure to provision the PSK                           | If the link is forced up by the application during the bootstrap procedure           | Library will retry after 24 hours.               |
-      | needed for the bootstrap procedure.                    | the error will be ``-EACCES``. Verify that the LwM2M library is controlling          |                                                  |
-      |                                                        | the link until the :c:macro:`LWM2M_CARRIER_EVENT_LTE_READY` event is sent.           |                                                  |
+      | Failure to provision the PSK                           | If the lte link is up while the modem attempts to write keys to the modem            | Library will retry after 24 hours.               |
+      | needed for the bootstrap procedure.                    | the error will be ``-EACCES``. Verify that the application respects the              |                                                  |
+      |                                                        | ``LWM2M_CARRIER_EVENT_LTE_LINK_UP`` and ``LWM2M_CARRIER_EVENT_LTE_LINK_DOWN`` events |                                                  |
       +--------------------------------------------------------+--------------------------------------------------------------------------------------+--------------------------------------------------+
       | Failure to read MSISDN or ICCID values (``-EFAULT``).  | ICCID is fetched from SIM, while MSISDN will be received from the network for        | Library will retry upon next network connection. |
       |                                                        | some carriers. If it has not been issued yet, the bootstrap process can not proceed. |                                                  |
