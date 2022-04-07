@@ -47,8 +47,6 @@ extern "C" {
 #define LWM2M_CARRIER_EVENT_FOTA_START	  9
 /** Application will reboot. */
 #define LWM2M_CARRIER_EVENT_REBOOT	  10
-/** LTE network is ready to be used. */
-#define LWM2M_CARRIER_EVENT_LTE_READY	  11
 /** Modem domain event received. */
 #define LWM2M_CARRIER_EVENT_MODEM_DOMAIN  12
 /** An error occurred. */

@@ -30,7 +30,6 @@ Below are some of the requirements and limitations of the application while runn
 
    * The LwM2M carrier library stores keys into the modem, which requires disconnecting from the LTE link and connecting to it.
    * The events to indicate disconnection and connection are :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN` and :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP`.
-   * The event :c:macro:`LWM2M_CARRIER_EVENT_LTE_READY` indicates that the LwM2M carrier library will not send link up/down requests. See :ref:`lwm2m_events` for more information on the events.
 
 * The LwM2M carrier library uses the TLS socket for FOTA.
 

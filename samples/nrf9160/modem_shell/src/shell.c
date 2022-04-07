@@ -162,9 +162,6 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	case LWM2M_CARRIER_EVENT_BOOTSTRAPPED:
 		mosh_print("LwM2M carrier event: bootstrapped");
 		break;
-	case LWM2M_CARRIER_EVENT_LTE_READY:
-		mosh_print("LwM2M carrier event: LTE ready");
-		break;
 	case LWM2M_CARRIER_EVENT_REGISTERED:
 		mosh_print("LwM2M carrier event: registered");
 		break;

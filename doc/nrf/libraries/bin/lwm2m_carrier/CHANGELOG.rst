@@ -44,6 +44,12 @@ Changes
   * Added the events :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP` :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN`, and :c:macro:`LWM2M_CARRIER_EVENT_LTE_POWER_OFF`.
 * Renamed the error ``LWM2M_CARRIER_ERROR_CONNECT_FAIL`` to :c:macro:`LWM2M_CARRIER_ERROR_LTE_LINK_UP_FAIL`.
 * Renamed the error ``LWM2M_CARRIER_ERROR_DISCONNECT_FAIL`` to :c:macro:`LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL`.
+* Removed the event ``LWM2M_CARRIER_EVENT_LTE_READY``. The event was intended to help the user application co-exist with the library, but it is not useful.
+
+  * Action to bring up and down the link are requested using the new :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP` and :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN` events.
+    The application can therefore do housekeeping in these events if needed.
+  * Even when the ``LWM2M_CARRIER_EVENT_LTE_READY`` was indicated to the application, the carrier library could in some cases still disconnect the link to write keys to the modem after some time.
+  * Any appliation would have to handle untimely disconnects anyway, because of factors such as signal coverage, making the ``LWM2M_CARRIER_EVENT_LTE_READY`` event redundant to begin with.
 
 liblwm2m_carrier 0.22.0
 ***********************
