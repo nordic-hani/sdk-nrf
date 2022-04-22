@@ -7,20 +7,27 @@ LwM2M carrier
    :local:
    :depth: 2
 
-You can use the LwM2M carrier library in your nRF91 application in order to connect to the LwM2M operator network.
-Integrating this library into an application causes the device to connect to the operator's device management platform autonomously.
-Two examples of such device management platforms are `Verizon's Thingspace`_ and `AT&T's IoT Platform`_.
-
 .. important::
 
-   It is *mandatory* to include the LwM2M carrier library in any Verizon or AT&T certified products.
+   It is *mandatory* to include the LwM2M carrier library in any AT&T, T-Mobile, or Verizon certified products.
 
-This library uses LwM2M protocol to communicate with device manager platforms, but it does not expose an LwM2M API to your application.
-If you want to use LwM2M for other purposes, see :ref:`lwm2m_interface`.
+Several mobile network carriers specify their own (LwM2M) device management.
+The nrf91 device is expected to connect to these device management servers, regardles of what else the user application may be doing.
+This autonomy is facilitated by the LwM2M carrier library.
+
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_overview.svg
+    :alt: LwM2M carrier library working together with the user application
+
+    LwM2M carrier library working together with the use application
+
+For the applicable carriers (`Mobile network operator certifications`_), this library is mandatory to include in your application to be able to certify your end product.
 
 The :ref:`lwm2m_carrier` sample demonstrates how to run this library in an application.
 The LwM2M carrier library is also used in the :ref:`asset_tracker_v2` application.
 
+.. note::
+
+  If you are looking to use LwM2M for other purposes, please see :ref:`lwm2m_interface`.
 
 .. toctree::
     :maxdepth: 1

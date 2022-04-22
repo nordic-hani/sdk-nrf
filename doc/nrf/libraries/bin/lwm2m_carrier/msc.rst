@@ -5,71 +5,26 @@ Message sequence charts
 
 The following message sequence chart shows the initialization of the LwM2M carrier library:
 
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_msc_init.svg
+    :alt: LwM2M carrier library initialization
 
-.. msc::
-    hscale = "1.1";
-    "LTE link controller", Application, "LwM2M carrier Library";
-    Application=>"LwM2M carrier Library"             [label="lwm2m_carrier_init()"];
-    Application<<="LwM2M carrier Library"            [label="LWM2M_CARRIER_EVENT_CARRIER_INIT"];
-    Application rbox Application                     [label="Application can now attach to network"];
-    "LTE link controller"<<= "Application"           [label="lte_lc_init_and_connect()"];
-    Application=>"LwM2M carrier Library"             [label="lwm2m_carrier_run()"];    |||;
-    "LwM2M carrier Library" :> "LwM2M carrier Library" [label="(no return)"];
-    ...;
+    LwM2M carrier library initialization
 
 
 
 The following message sequence chart shows the ``lwm2m_carrier_thread_run`` thread up until we register with the device management server:
 
-.. msc::
-    hscale = "1.1";
-    "LTE link controller", Application, "LwM2M carrier Library";
-    Application=>"LwM2M carrier Library"                 [label="lwm2m_carrier_run()"];
-    ...;
-    |||;
-    ---                                                  [label="Device is not bootstrapped yet"];
-    |||;
-    ...;
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_LTE_LINK_DOWN"];
-    "LTE link controller"<<= "Application"               [label="lte_lc_offline()"];
-    "LwM2M carrier Library" rbox "LwM2M carrier Library" [label="Write Bootstrap-Server keys to modem"];
-    |||;
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_LTE_LINK_UP"];
-    "LTE link controller"<<= "Application"               [label="lte_lc_connect()"];
-    ...;
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_LTE_LINK_DOWN"];
-    "LTE link controller"<<= "Application"               [label="lte_lc_offline()"];
-    "LwM2M carrier Library" rbox "LwM2M carrier Library" [label="Write management server keys to modem"];
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_BOOTSTRAPPED"];
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_LTE_LINK_UP"];
-    "LTE link controller"<<= "Application"               [label="lte_lc_connect()"];
-    ---                                                  [label="Device is bootstrapped"];
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_LTE_READY"];
-    Application rbox Application                         [label="Application can now use the LTE link without further interruptions from the LwM2M carrier library"];
-    "LwM2M carrier Library" rbox "LwM2M carrier Library" [label="Connecting to the management server(s)"];
-    ...;
-    Application<<="LwM2M carrier Library"                [label="LWM2M_CARRIER_EVENT_REGISTERED"];
-    ...;
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_msc_bootstrap.svg
+    :alt: LwM2M library bootstrap and register procedure
 
+    LwM2M library bootstrap and register procedure
 
 The following message sequence chart shows FOTA updates:
 
-.. msc::
-    hscale = "1.1";
-    "LTE link controller", Application, "LwM2M carrier Library";
-    |||;
-    ---                                        [label="Carrier initiates modem update"];
-    |||;
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_FOTA_START"];
-    ...;
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_LTE_LINK_DOWN"];
-    "LTE link controller"<<= "Application"     [label="lte_lc_offline()"];
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_LTE_LINK_UP"];
-    "LTE link controller"<<= "Application"     [label="lte_lc_connect()"];
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_LTE_READY"];
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_REGISTERED"];
-    ...;
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_msc_fota_success.svg
+    :alt: LwM2M server initiated FOTA
 
+    LwM2M server initiated FOTA
 
 The following message sequence chart shows a successful CA certificate initialization:
 
@@ -111,15 +66,7 @@ The following message sequence chart shows that the CA certificate initializatio
 
 The following message sequence chart shows that FOTA fails at run time if an invalid CA certificate is provided during the initialization:
 
-.. msc::
-    hscale = "1.1";
-    Application,"LwM2M carrier Library";
-    |||;
-    ---                                        [label="Carrier initiates modem update"];
-    |||;
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_EVENT_FOTA_START"];
-    ...;
-    "LwM2M carrier Library" rbox "LwM2M carrier Library" [label="Apply security tag that contains invalid certificate"];
-    |||;
-    Application<<="LwM2M carrier Library"      [label="LWM2M_CARRIER_ERROR_FOTA_CONN (NRF_ECONNREFUSED)"];
-    ...;
+.. figure:: /libraries/bin/lwm2m_carrier/images/lwm2m_carrier_msc_fota_fail_cert.svg
+    :alt: FOTA CA certificate failure
+
+    FOTA CA certificate failure
