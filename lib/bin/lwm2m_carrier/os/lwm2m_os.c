@@ -37,18 +37,20 @@
 #define NVS_SECTOR_COUNT 3
 /* Start address of the filesystem in flash */
 #define NVS_STORAGE_OFFSET DT_REG_ADDR(DT_NODE_BY_FIXED_PARTITION_LABEL(storage))
+/* Flash Device runtime structure */
+#define NVS_FLASH_DEVICE DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller))
 
 static struct nvs_fs fs = {
 	.sector_size = NVS_SECTOR_SIZE,
 	.sector_count = NVS_SECTOR_COUNT,
 	.offset = NVS_STORAGE_OFFSET,
-	.flash_device = DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller)),
+	.flash_device = NVS_FLASH_DEVICE,
 };
 
 K_THREAD_STACK_ARRAY_DEFINE(lwm2m_os_work_q_client_stack, LWM2M_OS_MAX_WORK_QS, 4096);
 static struct k_work_q lwm2m_os_work_qs[LWM2M_OS_MAX_WORK_QS];
 
-K_THREAD_STACK_ARRAY_DEFINE(lwm2m_os_thread_stack, LWM2M_OS_MAX_THREAD_COUNT, 512);
+K_THREAD_STACK_ARRAY_DEFINE(lwm2m_os_thread_stack, LWM2M_OS_MAX_THREAD_COUNT, 600);
 static struct k_thread lwm2m_os_threads[LWM2M_OS_MAX_THREAD_COUNT];
 
 static struct k_sem lwm2m_os_sems[LWM2M_OS_MAX_SEM_COUNT];

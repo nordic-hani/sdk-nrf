@@ -63,7 +63,7 @@ void nrf_modem_recoverable_error_handler(uint32_t error)
 #if defined(CONFIG_LWM2M_CARRIER)
 void lwm2m_print_err(const lwm2m_carrier_event_t *evt)
 {
-	const lwm2m_carrier_event_error_t *err = (lwm2m_carrier_event_error_t *)evt->data;
+	const lwm2m_carrier_event_error_t *err = evt->data.error;
 
 	static const char * const strerr[] = {
 		[LWM2M_CARRIER_ERROR_NO_ERROR] =
@@ -92,12 +92,12 @@ void lwm2m_print_err(const lwm2m_carrier_event_t *evt)
 			"Internal failure",
 	};
 
-	mosh_error("%s, reason %d\n", strerr[err->code], err->value);
+	mosh_error("%s, reason %d\n", strerr[err->type], err->value);
 }
 
 void lwm2m_print_deferred(const lwm2m_carrier_event_t *evt)
 {
-	const lwm2m_carrier_event_deferred_t *def = (lwm2m_carrier_event_deferred_t *)evt->data;
+	const lwm2m_carrier_event_deferred_t *def = evt->data.deferred;
 
 	static const char *const strdef[] = {
 		[LWM2M_CARRIER_DEFERRED_NO_REASON] =

@@ -30,8 +30,9 @@ extern "C" {
 #define LWM2M_CARRIER_EVENT_CARRIER_INIT  1
 /** Request connect to the LTE network. */
 #define LWM2M_CARRIER_EVENT_LTE_LINK_UP	  2
-/** Request disconnect from the LTE network.
- *  The link must be offline until a subsequent LWM2M_CARRIER_EVENT_LTE_LINK_UP event.
+/**
+ * Request disconnect from the LTE network.
+ * The link must be offline until a subsequent LWM2M_CARRIER_EVENT_LTE_LINK_UP event.
  */
 #define LWM2M_CARRIER_EVENT_LTE_LINK_DOWN 3
 /** Request power off LTE network. */
@@ -57,14 +58,22 @@ extern "C" {
 /** @} */
 
 /**
- * @brief LwM2M carrier library event structure.
+ * @name LwM2M carrier library firmware update types.
+ * @{
+ */
+/** Receiving a modem firmware delta patch. */
+#define LWM2M_CARRIER_FOTA_START_MODEM_DELTA 0
+/** @} */
+
+/**
+ * @brief LwM2M carrier library firmware update event structure.
  */
 typedef struct {
-	/** Event type. */
+	/** Firmware type to be received. */
 	uint32_t type;
-	/** Event data. Can be NULL, depending on event type. */
-	const void *data;
-} lwm2m_carrier_event_t;
+	/** URI from where the firmware will be downloaded. Set to NULL if no URI will be used. */
+	const char *uri;
+} lwm2m_carrier_event_fota_start_t;
 
 /**
  * @name LwM2M carrier library modem domain event types.
@@ -77,6 +86,11 @@ typedef struct {
 /** Modem has detected a reset loop and will restrict Attach attempts for the next 30 minutes. */
 #define LWM2M_CARRIER_MODEM_EVENT_RESET_LOOP	 2
 /** @} */
+
+/**
+ * @brief LwM2M carrier library modem domain event type value.
+ */
+typedef uint32_t lwm2m_carrier_event_modem_domain_t;
 
 /**
  * @name LwM2M carrier library event deferred reasons.
@@ -115,7 +129,7 @@ typedef struct {
 } lwm2m_carrier_event_deferred_t;
 
 /**
- * @name LwM2M carrier library event error codes.
+ * @name LwM2M carrier library event error types.
  * @{
  */
 /** No error. */
@@ -148,11 +162,44 @@ typedef struct {
  * @brief LwM2M carrier library error event structure.
  */
 typedef struct {
-	/** Error event code. */
-	uint32_t code;
+	/** Error event type. */
+	uint32_t type;
 	/** Error event value. */
 	int32_t value;
 } lwm2m_carrier_event_error_t;
+
+/**
+ * @brief Structure holding security tags for CA certificates to be applied by the LwM2M carrier
+ *        library.
+ */
+typedef struct {
+	/** Pointer to static array of available security tags. */
+	int *tags;
+	/** Number of available security tags. */
+	int count;
+} lwm2m_carrier_event_certs_init_t;
+
+/**
+ * @brief LwM2M carrier library event structure.
+ */
+typedef struct {
+	/** Event type. */
+	uint32_t type;
+	/** Pointer to event data, according to event type. */
+	union {
+		/** @c LWM2M_CARRIER_EVENT_FOTA_START */
+		lwm2m_carrier_event_fota_start_t *fota_start;
+		/** @c LWM2M_CARRIER_EVENT_MODEM_DOMAIN */
+		lwm2m_carrier_event_modem_domain_t *modem_domain;
+		/** @c LWM2M_CARRIER_EVENT_DEFERRED */
+		lwm2m_carrier_event_deferred_t *deferred;
+		/** @c LWM2M_CARRIER_EVENT_ERROR */
+		lwm2m_carrier_event_error_t *error;
+		/** @c LWM2M_CARRIER_EVENT_CERTS_INIT */
+		lwm2m_carrier_event_certs_init_t *certs_init;
+		/** For all other event types, it will be set to NULL. */
+	} data;
+} lwm2m_carrier_event_t;
 
 /**
  * @name LwM2M device power sources types.
@@ -207,17 +254,6 @@ typedef struct {
 /** @} */
 
 /**
- * @brief Structure holding security tags for CA certificates to be applied by the LwM2M carrier
- *        library.
- */
-typedef struct {
-	/** Pointer to static array of available security tags */
-	int *tags;
-	/** Number of available security tags */
-	int count;
-} ca_cert_tags_t;
-
-/**
  * @brief Structure holding LwM2M carrier library initialization parameters.
  */
 typedef struct {
@@ -229,10 +265,7 @@ typedef struct {
 	int32_t server_lifetime;
 	/** Default DTLS session idle timeout (in seconds). */
 	int32_t session_idle_timeout;
-	/**
-	 * Optional Pre-Shared Key, required if @c server_uri is secure (uses "coaps://" scheme).
-	 * Null-terminated string of at most 64 hexadecimal digits (32 bytes).
-	 */
+	/** Optional Pre-Shared Key. Null-terminated string of at most 64 hexadecimal digits. */
 	const char *psk;
 	/** Optional custom APN. Null-terminated string of at most 63 characters. */
 	const char *apn;
@@ -306,7 +339,7 @@ int lwm2m_carrier_utc_offset_read(void);
  *
  * @return  Null-terminated timezone string pointer, IANA Timezone (TZ) database format.
  */
-const char *lwm2m_carrier_timezone_read(void);
+char *lwm2m_carrier_timezone_read(void);
 
 /**
  * @brief Function to write current UTC time (LwM2M server write operation)
