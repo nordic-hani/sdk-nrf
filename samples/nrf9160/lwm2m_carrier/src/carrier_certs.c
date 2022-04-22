@@ -47,12 +47,12 @@ static const struct {
 	}
 };
 
-static const ca_cert_tags_t ca_tags = {
+static const lwm2m_carrier_event_certs_init_t ca_tags = {
 	.tags = tags,
 	.count = ARRAY_SIZE(tags),
 };
 
-int carrier_cert_provision(ca_cert_tags_t * const tags)
+int carrier_cert_provision(lwm2m_carrier_event_certs_init_t * const tags)
 {
 	int err;
 	bool mismatch = 0;

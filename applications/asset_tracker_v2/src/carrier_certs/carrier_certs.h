@@ -10,7 +10,7 @@
 #ifdef CONFIG_LWM2M_CARRIER
 #include <lwm2m_carrier.h>
 
-int carrier_certs_provision(ca_cert_tags_t *const tags);
+int carrier_certs_provision(lwm2m_carrier_event_certs_init_t *const tags);
 #endif /* CONFIG_LWM2M_CARRIER */
 
 #endif /* CARRIER_CERTS_H__ */
