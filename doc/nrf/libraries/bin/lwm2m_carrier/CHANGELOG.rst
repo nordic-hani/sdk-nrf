@@ -44,6 +44,19 @@ Changes
   * Added the events :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_UP` :c:macro:`LWM2M_CARRIER_EVENT_LTE_LINK_DOWN`, and :c:macro:`LWM2M_CARRIER_EVENT_LTE_POWER_OFF`.
 * Renamed the error ``LWM2M_CARRIER_ERROR_CONNECT_FAIL`` to :c:macro:`LWM2M_CARRIER_ERROR_LTE_LINK_UP_FAIL`.
 * Renamed the error ``LWM2M_CARRIER_ERROR_DISCONNECT_FAIL`` to :c:macro:`LWM2M_CARRIER_ERROR_LTE_LINK_DOWN_FAIL`.
+* NVS records are no longer staticly defined by a devicetree partition. Instead, the `partition_manager`_ is used to define flash partition dynamically.
+
+  * To use the legacy NVS partition, you can add a ``pm_static.yml`` to your project with the content below.
+    This is strongly encouraged if updating deployed devices, to make sure that the persistent configuration of the library is preserved accross the versions.
+
+.. code-block:: none
+
+   lwm2m_carrier:
+     address: 0xfa000
+     size: 0x3000
+   free:
+     address: 0xfd000
+     size: 0x3000
 
 liblwm2m_carrier 0.22.0
 ***********************

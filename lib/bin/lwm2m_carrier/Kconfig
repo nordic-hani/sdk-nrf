@@ -120,6 +120,24 @@ config LWM2M_CARRIER_BOOTSTRAP_SMARTCARD
 	help
 	  Bootstrap from Smartcard mode when this is enabled by the carrier.
 
+config LWM2M_CARRIER_STORAGE_AREA_SIZE
+	hex "Size of the lwm2m_carrier partition"
+	default 0x3000
+	help
+	  Size of the dynamic flash partition used for LwM2M carrier library storage.
+	  Should be a multiple of CONFIG_LWM2M_CARRIER_STORAGE_SECTOR_SIZE.
+
+DT_ZEPHYR_FLASH := zephyr,flash
+config LWM2M_CARRIER_STORAGE_SECTOR_SIZE
+	hex
+	default $(dt_node_int_prop_hex,$(dt_chosen_path,$(DT_ZEPHYR_FLASH)),erase-block-size)
+
+config PM_PARTITION_SIZE_NVS_STORAGE
+	hex
+	default 0
+	help
+	  Hide the nvs_storage partition by default, in case it is unused.
+
 module=LWM2M_CARRIER
 module-dep=LOG
 module-str=LwM2M carrier library

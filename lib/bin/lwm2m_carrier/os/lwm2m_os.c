@@ -18,6 +18,7 @@
 #include <modem/modem_key_mgmt.h>
 #include <modem/sms.h>
 #include <net/download_client.h>
+#include <storage/flash_map.h>
 #include <sys/reboot.h>
 #include <sys/__assert.h>
 #include <sys/util.h>
@@ -31,14 +32,13 @@
 
 /* NVS-related defines */
 
-/* Multiple of FLASH_PAGE_SIZE */
-#define NVS_SECTOR_SIZE DT_PROP(DT_CHOSEN(zephyr_flash), erase_block_size)
-/* At least 2 sectors */
-#define NVS_SECTOR_COUNT 3
+/* Divide flash area into NVS sectors */
+#define NVS_SECTOR_SIZE     (CONFIG_LWM2M_CARRIER_STORAGE_SECTOR_SIZE)
+#define NVS_SECTOR_COUNT    (FLASH_AREA_SIZE(lwm2m_carrier) / NVS_SECTOR_SIZE)
 /* Start address of the filesystem in flash */
-#define NVS_STORAGE_OFFSET DT_REG_ADDR(DT_NODE_BY_FIXED_PARTITION_LABEL(storage))
+#define NVS_STORAGE_OFFSET  (FLASH_AREA_OFFSET(lwm2m_carrier))
 /* Flash Device runtime structure */
-#define NVS_FLASH_DEVICE DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller))
+#define NVS_FLASH_DEVICE    (DEVICE_DT_GET(DT_CHOSEN(zephyr_flash_controller)))
 
 static struct nvs_fs fs = {
 	.sector_size = NVS_SECTOR_SIZE,
@@ -161,7 +161,7 @@ void lwm2m_os_sem_reset(lwm2m_os_sem_t *sem)
 
 int lwm2m_os_storage_delete(uint16_t id)
 {
-	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) || (id <= LWM2M_OS_STORAGE_END),
+	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) && (id <= LWM2M_OS_STORAGE_END),
 		 "Storage ID out of range");
 
 	return nvs_delete(&fs, id);
@@ -169,7 +169,7 @@ int lwm2m_os_storage_delete(uint16_t id)
 
 int lwm2m_os_storage_read(uint16_t id, void *data, size_t len)
 {
-	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) || (id <= LWM2M_OS_STORAGE_END),
+	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) && (id <= LWM2M_OS_STORAGE_END),
 		 "Storage ID out of range");
 
 	return nvs_read(&fs, id, data, len);
@@ -177,7 +177,7 @@ int lwm2m_os_storage_read(uint16_t id, void *data, size_t len)
 
 int lwm2m_os_storage_write(uint16_t id, const void *data, size_t len)
 {
-	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) || (id <= LWM2M_OS_STORAGE_END),
+	__ASSERT((id >= LWM2M_OS_STORAGE_BASE) && (id <= LWM2M_OS_STORAGE_END),
 		 "Storage ID out of range");
 
 	return nvs_write(&fs, id, data, len);
