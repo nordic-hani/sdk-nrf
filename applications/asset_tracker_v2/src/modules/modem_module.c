@@ -296,7 +296,7 @@ static void modem_rsrp_handler(char rsrp_value)
 #ifdef CONFIG_LWM2M_CARRIER
 static void print_carrier_error(const lwm2m_carrier_event_t *evt)
 {
-	const lwm2m_carrier_event_error_t *err = (lwm2m_carrier_event_error_t *)evt->data;
+	const lwm2m_carrier_event_error_t *err = evt->data.error;
 	static const char *const strerr[] = {
 		[LWM2M_CARRIER_ERROR_NO_ERROR] =
 			"No error",
@@ -324,14 +324,14 @@ static void print_carrier_error(const lwm2m_carrier_event_t *evt)
 			"Internal failure",
 	};
 
-	__ASSERT(PART_OF_ARRAY(strerr, &strerr[err->code]), "Unhandled carrier library error");
+	__ASSERT(PART_OF_ARRAY(strerr, &strerr[err->type]), "Unhandled carrier library error");
 
-	LOG_ERR("%s, reason %d\n", strerr[err->code], err->value);
+	LOG_ERR("%s, reason %d\n", strerr[err->type], err->value);
 }
 
 static void print_carrier_deferred_reason(const lwm2m_carrier_event_t *evt)
 {
-	const lwm2m_carrier_event_deferred_t *def = (lwm2m_carrier_event_deferred_t *)evt->data;
+	const lwm2m_carrier_event_deferred_t *def = evt->data.deferred;
 	static const char *const strdef[] = {
 		[LWM2M_CARRIER_DEFERRED_NO_REASON] =
 			"No reason given",
@@ -416,18 +416,18 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 		return 1;
 	}
 	case LWM2M_CARRIER_EVENT_ERROR: {
-		const lwm2m_carrier_event_error_t *err = (lwm2m_carrier_event_error_t *)evt->data;
+		const lwm2m_carrier_event_error_t *err = evt->data.error;
 
 		LOG_ERR("LWM2M_CARRIER_EVENT_ERROR");
 		print_carrier_error(evt);
 
-		if (err->code == LWM2M_CARRIER_ERROR_FOTA_FAIL) {
+		if (err->type == LWM2M_CARRIER_ERROR_FOTA_FAIL) {
 			SEND_EVENT(modem, MODEM_EVT_CARRIER_FOTA_STOPPED);
 		}
 		break;
 	}
 	case LWM2M_CARRIER_EVENT_CERTS_INIT:
-		err = carrier_certs_provision((ca_cert_tags_t *)evt->data);
+		err = carrier_certs_provision(evt->data.certs_init);
 		break;
 	}
 
