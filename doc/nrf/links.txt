@@ -744,6 +744,8 @@
 .. _`AT&T's Get network ready program`: https://iotdevices.att.com/networkready.aspx
 .. _`AT&T's IoT Platform`: https://iotdevices.att.com/default.aspx
 
+.. _`T-Mobile's IoT certification program`: https://www.t-mobile.com/business/solutions/iot/device-certification
+
 .. _`Platform Security Architecture (PSA)`: https://www.psacertified.org/what-is-psa-certified/
 
 .. _`Mbed TLS`: https://developer.trustedfirmware.org/w/mbed-tls/
