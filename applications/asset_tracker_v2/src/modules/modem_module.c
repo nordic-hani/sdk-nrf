@@ -366,8 +366,8 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *evt)
 	int err = 0;
 
 	switch (evt->type) {
-	case LWM2M_CARRIER_EVENT_CARRIER_INIT: {
-		LOG_INF("LWM2M_CARRIER_EVENT_CARRIER_INIT");
+	case LWM2M_CARRIER_EVENT_INIT: {
+		LOG_INF("LWM2M_CARRIER_EVENT_INIT");
 		SEND_EVENT(modem, MODEM_EVT_CARRIER_INITIALIZED);
 		break;
 	}

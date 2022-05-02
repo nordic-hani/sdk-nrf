@@ -27,7 +27,7 @@ extern "C" {
  * @{
  */
 /** Carrier library initialized. */
-#define LWM2M_CARRIER_EVENT_CARRIER_INIT  1
+#define LWM2M_CARRIER_EVENT_INIT	  1
 /** Request connect to the LTE network. */
 #define LWM2M_CARRIER_EVENT_LTE_LINK_UP	  2
 /**
@@ -282,8 +282,11 @@ typedef struct {
  *       application has to make sure that the provided parameters are valid throughout the
  *       application lifetime (i.e. placed in static memory or in flash).
  *
- * @note The first time this function is called after a modem firmware update, (FOTA) it may take
- *       several seconds to return in order to complete the procedure.
+ * @note This function will block until a SIM card is initialized by the modem. The library cannot
+ *       proceed if, for example, no SIM is inserted, or a PIN code must be entered.
+ *
+ * @note The first time this function is called after a modem firmware update (FOTA), it may block
+ *       for several seconds in order to complete the procedure.
  *
  * @retval  0      If initialization was successful.
  * @retval -EINVAL If the configuration parameters are invalid. See @c lwm2m_carrier_config_t

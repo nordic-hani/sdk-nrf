@@ -19,7 +19,7 @@ menuconfig LWM2M_CARRIER
 	depends on NVS
 	# Heap and stack requirements
 	depends on (HEAP_MEM_POOL_SIZE >= 4096)
-	depends on (SYSTEM_WORKQUEUE_STACK_SIZE >= 1312)
+	depends on (SYSTEM_WORKQUEUE_STACK_SIZE >= 1536)
 	# NCS dependencies
 	# Networking - Zephyr
 	depends on NETWORKING
@@ -75,13 +75,6 @@ config LWM2M_CARRIER_SERVER_LIFETIME
 
 endif # !LWM2M_CARRIER_IS_SERVER_BOOTSTRAP
 
-config LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
-	int "Session Idle Timeout"
-	default 60
-	help
-	  Session Idle Timeout (seconds).
-	  Setting this to 0 will use the default value (60 seconds).
-
 endif # LWM2M_CARRIER_USE_CUSTOM_URI
 
 config LWM2M_CARRIER_USE_CUSTOM_PSK
@@ -119,6 +112,13 @@ config LWM2M_CARRIER_BOOTSTRAP_SMARTCARD
 	default y
 	help
 	  Bootstrap from Smartcard mode when this is enabled by the carrier.
+
+config LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
+	int "DTLS session idle timeout"
+	default 60
+	help
+	  Number of seconds, for which a DTLS session used by this library can be idle
+	  before it is closed. Setting this to 0 will use the default value (60 seconds).
 
 module=LWM2M_CARRIER
 module-dep=LOG

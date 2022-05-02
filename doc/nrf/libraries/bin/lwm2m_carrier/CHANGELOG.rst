@@ -36,6 +36,9 @@ See :ref:`lwm2m_lib_size` for an explanation of the library size in different sc
 
 Changes
 =======
+
+* Renamed the event ``LWM2M_CARRIER_EVENT_CARRIER_INIT`` to :c:macro:`LWM2M_CARRIER_EVENT_INIT`
+* Added the Kconfig option :kconfig:option:`LWM2M_CARRIER_SESSION_IDLE_TIMEOUT`.
 * The LwM2M carrier library will now request the application to handle the LTE link,
   instead of doing so itself.
 

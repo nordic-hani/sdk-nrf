@@ -9,7 +9,7 @@
 #include <lwm2m_carrier.h>
 #include <modem/lte_lc.h>
 
-#define LWM2M_CARRIER_THREAD_STACK_SIZE 2048
+#define LWM2M_CARRIER_THREAD_STACK_SIZE 4096
 #define LWM2M_CARRIER_THREAD_PRIORITY K_LOWEST_APPLICATION_THREAD_PRIO
 
 static void lte_event_handler(const struct lte_lc_evt *const evt)
@@ -26,7 +26,7 @@ __weak int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	 * The application may replace this handler to have better control of the LTE link.
 	 */
 	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_CARRIER_INIT:
+	case LWM2M_CARRIER_EVENT_INIT:
 		err = lte_lc_init_and_connect_async(lte_event_handler);
 		break;
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:
@@ -75,6 +75,10 @@ void lwm2m_carrier_thread_run(void)
 
 #ifndef CONFIG_LWM2M_CARRIER_BOOTSTRAP_SMARTCARD
 	config.disable_bootstrap_from_smartcard = true;
+#endif
+
+#ifdef CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
+	config.session_idle_timeout = CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT;
 #endif
 
 	/* Initialize the LwM2M carrier library.

@@ -99,8 +99,8 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	int err = 0;
 
 	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_CARRIER_INIT:
-		printk("LWM2M_CARRIER_EVENT_CARRIER_INIT\n");
+	case LWM2M_CARRIER_EVENT_INIT:
+		printk("LWM2M_CARRIER_EVENT_INIT\n");
 		err = lte_lc_init_and_connect_async(lte_event_handler);
 		break;
 	case LWM2M_CARRIER_EVENT_LTE_LINK_UP:

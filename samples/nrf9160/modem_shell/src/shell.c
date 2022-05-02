@@ -130,7 +130,7 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 	int err = 0;
 
 	switch (event->type) {
-	case LWM2M_CARRIER_EVENT_CARRIER_INIT:
+	case LWM2M_CARRIER_EVENT_INIT:
 		mosh_print("LwM2M carrier event: carrier lib initialized");
 		k_sem_give(&nrf_carrier_lib_initialized);
 		break;
