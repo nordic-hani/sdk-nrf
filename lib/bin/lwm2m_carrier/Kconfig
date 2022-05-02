@@ -120,6 +120,21 @@ config LWM2M_CARRIER_SESSION_IDLE_TIMEOUT
 	  Number of seconds, for which a DTLS session used by this library can be idle
 	  before it is closed. Setting this to 0 will use the default value (60 seconds).
 
+config LWM2M_CARRIER_LG_UPLUS
+	depends on DFU_TARGET_MCUBOOT
+	bool "LwM2M carrier LG U+ settings"
+	help
+	  Enable settings required for supporting the LG U+ carrier.
+
+if LWM2M_CARRIER_LG_UPLUS
+
+config LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE
+	string "LG U+ Service Code"
+	help
+	  Service Code registered for this device with LG U+.
+
+endif # LWM2M_CARRIER_LG_UPLUS
+
 module=LWM2M_CARRIER
 module-dep=LOG
 module-str=LwM2M carrier library

@@ -43,7 +43,7 @@ extern "C" {
 #define LWM2M_CARRIER_EVENT_REGISTERED	  7
 /** LwM2M carrier operation is deferred. */
 #define LWM2M_CARRIER_EVENT_DEFERRED	  8
-/** Modem update started. */
+/** Firmware update started. */
 #define LWM2M_CARRIER_EVENT_FOTA_START	  9
 /** Application will reboot. */
 #define LWM2M_CARRIER_EVENT_REBOOT	  10
@@ -61,6 +61,8 @@ extern "C" {
  */
 /** Receiving a modem firmware delta patch. */
 #define LWM2M_CARRIER_FOTA_START_MODEM_DELTA 0
+/** Receiving application firmware. */
+#define LWM2M_CARRIER_FOTA_START_APPLICATION 2
 /** @} */
 
 /**
