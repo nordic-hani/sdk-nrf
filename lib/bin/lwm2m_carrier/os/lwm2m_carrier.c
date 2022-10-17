@@ -87,7 +87,17 @@ void lwm2m_carrier_thread_run(void)
 	config.software_version = CONFIG_LWM2M_CARRIER_DEVICE_SOFTWARE_VERSION;
 
 #ifdef CONFIG_LWM2M_CARRIER_LG_UPLUS
-	config.service_code = CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE;
+	lwm2m_carrier_lg_uplus_config_t lg_uplus_config = {0};
+
+	lg_uplus_config.service_code = CONFIG_LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE;
+
+	if (IS_ENABLED(CONFIG_LWM2M_CARRIER_LG_UPLUS_2DID)) {
+		lg_uplus_config.device_serial_no = LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_2DID;
+	} else {
+		lg_uplus_config.device_serial_no = LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_IMEI;
+	}
+
+	config.lg_uplus = lg_uplus_config;
 #endif
 
 #ifdef CONFIG_LWM2M_CARRIER_SESSION_IDLE_TIMEOUT

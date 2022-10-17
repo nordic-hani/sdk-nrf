@@ -25,6 +25,7 @@ LOG_MODULE_REGISTER(lwm2m_settings, CONFIG_LOG_DEFAULT_LEVEL);
 #define COAP_CON_INTERVAL_SETTINGS_KEY			"coap_con_interval"
 #define APN_SETTINGS_KEY				"apn"
 #define SERVICE_CODE_SETTINGS_KEY			"service_code"
+#define DEVICE_SERIAL_NO_SETTINGS_KEY                   "device_serial_no"
 
 #define ENABLE_CUSTOM_SERVER_SETTINGS_KEY		"enable_custom_server_settings"
 #define IS_BOOTSTRAP_SERVER_SETTINGS_KEY		"is_bootstrap_server"
@@ -49,6 +50,7 @@ static int32_t session_idle_timeout;
 static int32_t coap_con_interval;
 static char apn[64];
 static char service_code[6];
+static uint8_t device_serial_no;
 
 static bool enable_custom_server_config;
 static bool is_bootstrap_server;
@@ -83,6 +85,8 @@ static int settings_load_cb(const char *key, size_t len, settings_read_cb read_c
 		sz = read_cb(cb_arg, apn, sizeof(apn));
 	} else if (strcmp(key, SERVICE_CODE_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, service_code, sizeof(service_code));
+	} else if (strcmp(key, DEVICE_SERIAL_NO_SETTINGS_KEY) == 0) {
+		sz = read_cb(cb_arg, &device_serial_no, sizeof(device_serial_no));
 	} else if (strcmp(key, ENABLE_CUSTOM_SERVER_SETTINGS_KEY) == 0) {
 		sz = read_cb(cb_arg, &enable_custom_server_config,
 			     sizeof(enable_custom_server_config));
@@ -124,7 +128,8 @@ static void settings_enable_custom_config(lwm2m_carrier_config_t *config)
 	config->session_idle_timeout = session_idle_timeout;
 	config->coap_con_interval = coap_con_interval;
 	config->apn = apn;
-	config->service_code = service_code;
+	config->lg_uplus.service_code = service_code;
+	config->lg_uplus.device_serial_no = device_serial_no;
 }
 
 static void settings_enable_custom_server_config(lwm2m_carrier_config_t *config)
@@ -673,6 +678,25 @@ int lwm2m_settings_service_code_set(const char *new_service_code)
 		if (err) {
 			LOG_ERR("Save " SERVICE_CODE_SETTINGS_KEY " failed: %d", err);
 		}
+	}
+
+	return err;
+}
+
+bool lwm2m_settings_device_serial_no_get(void)
+{
+	return device_serial_no;
+}
+
+int lwm2m_settings_device_serial_no_set(bool new_device_serial_no)
+{
+	device_serial_no = new_device_serial_no;
+
+	int err = settings_save_one(LWM2M_SETTINGS_SUBTREE_NAME "/"
+				    DEVICE_SERIAL_NO_SETTINGS_KEY,
+				    &device_serial_no, sizeof(device_serial_no));
+	if (err) {
+		LOG_ERR("Save " DEVICE_SERIAL_NO_SETTINGS_KEY " failed: %d", err);
 	}
 
 	return err;

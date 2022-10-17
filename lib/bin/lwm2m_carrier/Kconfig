@@ -132,6 +132,23 @@ config LWM2M_CARRIER_LG_UPLUS_SERVICE_CODE
 	help
 	  Service Code registered for this device with LG U+.
 
+choice LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NUMBER
+	prompt "Device Serial Number used in LG U+ network"
+	default LWM2M_CARRIER_LG_UPLUS_IMEI
+
+config LWM2M_CARRIER_LG_UPLUS_IMEI
+	bool "Use IMEI as LG U+ Device Serial Number"
+	help
+	  Use the IMEI as the Device Serial Number registered for this device with LG U+.
+
+config LWM2M_CARRIER_LG_UPLUS_2DID
+	bool "Use 2DID as LG U+ Device Serial Number"
+	help
+	  Use the two-dimensional barcode of the SiP as the Device Serial Number
+	  registered for this device with LG U+.
+
+endchoice
+
 endif # LWM2M_CARRIER_LG_UPLUS
 
 config LWM2M_CARRIER_SESSION_IDLE_TIMEOUT

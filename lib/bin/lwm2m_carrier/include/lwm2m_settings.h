@@ -309,4 +309,20 @@ const char *lwm2m_settings_service_code_get(void);
  */
 int lwm2m_settings_service_code_set(const char *new_service_code);
 
+/**
+ * @brief Determines the LG U+ Device Serial Number type to be used.
+ *
+ * @retval The LG U+ Device Serial Number type.
+ */
+bool lwm2m_settings_device_serial_no_get(void);
+
+/**
+ * @brief Indicate the LG U+ Device Serial Number type to be used.
+ *
+ * @param new_device_serial_no  The LG U+ Device Serial Number type to be used.
+ *
+ * @retval 0 on success, non-zero on failure.
+ */
+int lwm2m_settings_device_serial_no_set(bool new_device_serial_no);
+
 #endif /* LWM2M_SETTINGS_H__ */

@@ -1147,6 +1147,39 @@ static int cmd_service_code_set(const struct shell *shell, size_t argc, char **a
 	return 0;
 }
 
+static int device_serial_no_type_get(int device_serial_no)
+{
+	switch (device_serial_no) {
+	case 0:
+		return LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_IMEI;
+	case 1:
+		return LWM2M_CARRIER_LG_UPLUS_DEVICE_SERIAL_NO_2DID;
+	default:
+		return -EINVAL;
+	}
+}
+
+static int cmd_device_serial_no_set(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_print(shell, " 0 = IMEI");
+		shell_print(shell, " 1 = 2DID");
+		return 0;
+	}
+
+	int32_t device_serial_no = device_serial_no_type_get(atoi(argv[1]));
+
+	if (device_serial_no < 0) {
+		shell_print(shell, "Invalid input");
+		return 0;
+	}
+
+	lwm2m_settings_device_serial_no_set(device_serial_no);
+	shell_print(shell, "LG U+ Device Serial Number type set successfully");
+
+	return 0;
+}
+
 static int cmd_settings_print(const struct shell *shell, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
@@ -1168,6 +1201,8 @@ static int cmd_settings_print(const struct shell *shell, size_t argc, char **arg
 	shell_print(shell, "  APN                            %s", lwm2m_settings_apn_get());
 	shell_print(shell, "  Service code                   %s",
 			lwm2m_settings_service_code_get());
+	shell_print(shell, "  Device Serial Number type      %d",
+			lwm2m_settings_device_serial_no_get());
 	shell_print(shell, "");
 	shell_print(shell, "Custom carrier server settings   %s",
 			lwm2m_settings_enable_custom_server_config_get() ?
@@ -1296,6 +1331,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_carrier_config,
 		SHELL_CMD(print, NULL, "Print custom settings", cmd_settings_print),
 		SHELL_CMD(server, &sub_carrier_config_server, "Server configuration", NULL),
 		SHELL_CMD(service_code, NULL, "Service code", cmd_service_code_set),
+		SHELL_CMD(device_serial_no, NULL, "Device Serial Number type",
+			  cmd_device_serial_no_set),
 		SHELL_CMD(session_idle_timeout, NULL, "Session timeout time",
 			  cmd_session_idle_timeout_set),
 		SHELL_SUBCMD_SET_END
