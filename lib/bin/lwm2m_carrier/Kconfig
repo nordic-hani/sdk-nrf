@@ -306,6 +306,7 @@ config LWM2M_CARRIER_SHELL
 	bool "LwM2M carrier shell"
 	depends on SHELL
 	depends on LWM2M_CARRIER_SETTINGS
+	depends on MODEM_KEY_MGMT
 	help
 	  Include LwM2M carrier shell
 

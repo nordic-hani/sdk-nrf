@@ -55,17 +55,12 @@ static uint8_t lwm2m_os_sems_used;
 AT_MONITOR(lwm2m_carrier_at_handler, ANY, lwm2m_os_at_handler);
 
 /* LwM2M carrier OS logs. */
-LOG_MODULE_REGISTER(lwm2m_os, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(lwm2m_os);
 
 /* OS initialization. */
 
 static int lwm2m_os_init(void)
 {
-#if defined CONFIG_LOG_RUNTIME_FILTERING
-	log_filter_set(NULL, CONFIG_LOG_DOMAIN_ID, LOG_CURRENT_MODULE_ID(),
-		       CONFIG_LOG_DEFAULT_LEVEL);
-#endif /* CONFIG_LOG_RUNTIME_FILTERING */
-
 	/* Initialize storage */
 	if (!device_is_ready(fs.flash_device)) {
 		return -ENODEV;

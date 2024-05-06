@@ -14,6 +14,35 @@ Certification status
 
 For certification status of the released versions, see `Mobile network operator certifications`_.
 
+liblwm2m_carrier 3.5.0
+**********************
+
+Release for modem firmware version 1.3.6 and 2.0.1.
+
+Size
+====
+
+See :ref:`lwm2m_lib_size` for an explanation of the library size in different scenarios.
+
++-------------------------+---------------+------------+
+|                         | Flash (Bytes) | RAM (Bytes)|
++-------------------------+---------------+------------+
+| Library size            |               |            |
+| (binary)                |               |            |
++-------------------------+---------------+------------+
+| Library size            |               |            |
+| (reference application) |               |            |
++-------------------------+---------------+------------+
+
+Changes
+=======
+
+* Added support for the "Mute Send" resource in the "Server" object.
+
+  * Added a new error ``ECANCELED`` to the function :c:func:`lwm2m_carrier_data_send`, in case send is muted by the server.
+
+* Added a dependency on :ref:`modem_key_mgmt` (:kconfig:option:`CONFIG_MODEM_KEY_MGMT`) for the LwM2M carrier library shell.
+
 liblwm2m_carrier 3.4.0
 **********************
 

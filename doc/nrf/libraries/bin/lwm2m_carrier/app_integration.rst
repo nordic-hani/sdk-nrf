@@ -244,7 +244,8 @@ Following are the various LwM2M carrier library events that are also listed in :
       This typically happens if the bootstrap sequence has failed on the carrier side.
     * :c:macro:`LWM2M_CARRIER_DEFERRED_SERVER_REGISTRATION` - The server registration has not completed, and the server does not recognize the connecting device.
       If this event persists, contact the carrier.
-    * :c:macro:`LWM2M_CARRIER_DEFERRED_SERVICE_UNAVAILABLE` - The server is unavailable due to maintenance.
+    * :c:macro:`LWM2M_CARRIER_DEFERRED_SERVICE_UNAVAILABLE` - The server is unavailable, for example due to maintenance.
+      In the Verizon network, this event can be given by the server to block excessive numbers of bootstrap and connections.
     * :c:macro:`LWM2M_CARRIER_DEFERRED_SIM_MSISDN` - The device is waiting for the SIM MSISDN to be available to read.
 * :c:macro:`LWM2M_CARRIER_EVENT_FOTA_START`:
 

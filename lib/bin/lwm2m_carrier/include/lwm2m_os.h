@@ -38,7 +38,7 @@ typedef int lwm2m_os_timer_t;
 /**
  * @brief Maximum number of semaphores that the system must support.
  */
-#define LWM2M_OS_MAX_SEM_COUNT (6 + (LWM2M_OS_MAX_WORK_QS * 2))
+#define LWM2M_OS_MAX_SEM_COUNT (6 + (LWM2M_OS_MAX_WORK_QS * 1))
 
 typedef int lwm2m_os_sem_t;
 

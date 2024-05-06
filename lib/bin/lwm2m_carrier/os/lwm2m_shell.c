@@ -823,14 +823,20 @@ static int cmd_data_send(const struct shell *shell, size_t argc, char **argv)
 	case 0:
 		shell_print(shell, "Sent app data successfully");
 		break;
+	case -EPERM:
+		shell_print(shell, "Resource at path is not readable");
+		break;
 	case -EINVAL:
-		shell_print(shell, "Invalid path");
+		shell_print(shell, "Send operation not supported for this path");
 		break;
 	case -ENOENT:
 		shell_print(shell, "Resource at path does not exist");
 		break;
 	case -EINPROGRESS:
 		shell_print(shell, "Send operation already in progress");
+		break;
+	case -ECANCELED:
+		shell_print(shell, "Send is muted for the target server");
 		break;
 	default:
 		shell_print(shell, "Unknown error: %d", err);

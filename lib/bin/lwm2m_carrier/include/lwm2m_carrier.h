@@ -776,9 +776,11 @@ int lwm2m_carrier_app_data_set(const uint16_t *path, uint16_t path_len, const ui
  * @param[in]  path_len The length of the path. Must be 3 or 4.
  *
  * @retval  0           If the data has been sent successfully.
+ * @retval -EPERM       If the operation was attempted on a resource that is not readable.
  * @retval -ENOENT      If the path points to something that is not yet initialized.
  * @retval -EINVAL      If the operation was attempted on an unsupported resource.
  * @retval -EINPROGRESS If the operation was attempted while a send request was already in progress.
+ * @retval -ECANCELED   If the Mute Send resource is enabled for the LwM2M server.
  */
 int lwm2m_carrier_data_send(const uint16_t *path, uint8_t path_len);
 
