@@ -22,6 +22,21 @@ generate_inc_file_for_target(
     certs/DigiCertGlobalRootG2.pem
     ${gen_dir}/DigiCertGlobalRootG2.pem.inc
     )
+generate_inc_file_for_target(
+    app
+    certs/DigiCertTLSECCP384RootG5.pem
+    ${gen_dir}/DigiCertTLSECCP384RootG5.pem.inc
+    )
+generate_inc_file_for_target(
+    app
+    certs/DigiCertTLSRSA4096RootG5.pem
+    ${gen_dir}/DigiCertTLSRSA4096RootG5.pem.inc
+    )
+generate_inc_file_for_target(
+    app
+    certs/DigiCertTrustedRootG4.pem
+    ${gen_dir}/DigiCertTrustedRootG4.pem.inc
+    )
 
 # NORDIC SDK APP START
 target_sources(app PRIVATE src/main.c)

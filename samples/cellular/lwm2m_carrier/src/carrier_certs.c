@@ -26,9 +26,24 @@ static const char ca412[] = {
 	/* VzW and Motive, AT&T */
 	#include "DigiCertGlobalRootCA.pem.inc"
 };
+static const char ca413[] = {
+	/* VzW*/
+	#include "DigiCertTLSECCP384RootG5.pem.inc"
+};
+static const char ca414[] = {
+	/* VzW*/
+	#include "DigiCertTLSRSA4096RootG5.pem.inc"
+};
+static const char ca415[] = {
+	/* VzW*/
+	#include "DigiCertTrustedRootG4.pem.inc"
+};
 
 BUILD_ASSERT(sizeof(ca411) < KB(4), "Cert is too large");
 BUILD_ASSERT(sizeof(ca412) < KB(4), "Cert is too large");
+BUILD_ASSERT(sizeof(ca413) < KB(4), "Cert is too large");
+BUILD_ASSERT(sizeof(ca414) < KB(4), "Cert is too large");
+BUILD_ASSERT(sizeof(ca415) < KB(4), "Cert is too large");
 
 static const struct {
 	uint16_t tag;
@@ -44,6 +59,21 @@ static const struct {
 		.tag = 412,
 		.data = ca412,
 		.len = sizeof(ca412),
+	},
+	{
+		.tag = 413,
+		.data = ca413,
+		.len = sizeof(ca413),
+	},
+	{
+		.tag = 414,
+		.data = ca414,
+		.len = sizeof(ca414),
+	},
+	{
+		.tag = 415,
+		.data = ca415,
+		.len = sizeof(ca415),
 	}
 };
 
